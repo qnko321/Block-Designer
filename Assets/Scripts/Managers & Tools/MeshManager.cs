@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Triangles;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Vertices;
@@ -22,15 +23,15 @@ public class MeshManager : MonoBehaviour
     private readonly Dictionary<Guid, Vertex> vertices = new();
     private readonly List<Vertex> selectedVertices = new();
 
+    private readonly Dictionary<Guid, Triangle> triangles = new();
+    private Triangle selectedTriangle;
+
     #region Events
 
     #region Vertices
     public void OnCreateVertex(Guid _guid)
     {
-        Vertex _vertex = Instantiate(vertexPrefab, transform).GetComponent<Vertex>();
-        _vertex.guid = _guid;
-        vertices.Add(_guid, _vertex);
-        SelectVertex(_vertex);
+        CreateVertex(_guid);
     }
 
     public void OnVertexSelect(Guid _guid)
@@ -55,6 +56,14 @@ public class MeshManager : MonoBehaviour
 
     #region Vertices
 
+    private void CreateVertex(Guid _guid)
+    {
+        Vertex _vertex = Instantiate(vertexPrefab, transform).GetComponent<Vertex>();
+        _vertex.guid = _guid;
+        vertices.Add(_guid, _vertex);
+        SelectVertex(_vertex);
+    }
+    
     private void SelectVertex(Vertex _vertex, bool _addToOthers = false)
     {
         if (!_addToOthers)
@@ -185,6 +194,20 @@ public class MeshManager : MonoBehaviour
             moveTool.transform.position = _vertTrans.position;
     }
 
+    #endregion
+    
+    #region Triangles
+
+    private void CreateTriangle()
+    {
+        
+    }
+    
+    private void SelectTriangle()
+    {
+        
+    }
+    
     #endregion
 
     #region Serialization&Desirialization

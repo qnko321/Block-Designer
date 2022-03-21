@@ -136,7 +136,9 @@ namespace UI
 
         public void OnTriangleCreate(Guid _guid)
         {
-            TriangleUI _triUi = Instantiate(triangleUIPrefab, trianglesParent).GetComponent<TriangleUI>().Populate(_guid);
+            GameObject _triangleUIObject = Instantiate(triangleUIPrefab, trianglesParent);
+            TriangleUI _triUi = _triangleUIObject.GetComponent<TriangleUI>();
+            _triUi.guid = _guid;
             autoContentSizeTriangles.CorrectSize();
             triangleUIs.Add(_guid, _triUi);
             DeselectAllVertices();
@@ -144,12 +146,12 @@ namespace UI
 
             SelectTriangle(_guid);
         }
-            
+        
         public void OnSelectTriangle(Guid _guid)
         {
             SelectTriangle(_guid);
         }
-            
+        
         public void OnDeSelectTriangle(Guid _guid)
         {
             DeSelectTriangle(_guid);

@@ -140,6 +140,9 @@ GameObject:
   - component: {fileID: 34135105}
   - component: {fileID: 34135107}
   - component: {fileID: 34135106}
+  - component: {fileID: 34135110}
+  - component: {fileID: 34135109}
+  - component: {fileID: 34135108}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -246,9 +249,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vertexCreateEvent: {fileID: 11400000, guid: 5d4c1f43d89dbce49a7386ee88136457, type: 2}
+  triangleCreateEvent: {fileID: 11400000, guid: 7e48072e3c766fa4fa76ecbb50a111a7,
+    type: 2}
   leftControlInput: {fileID: -6754073321604040614, guid: 5729719a20b347f4496c78e868928ddc,
     type: 3}
   vertexUIPrefab: {fileID: 9168401083469063881, guid: f71aa3169ed98bd48a2dfb2d40019186,
+    type: 3}
+  triangleUIPrefab: {fileID: 9168401083469063881, guid: e827ebaf61ca6964f837f25cd07e5f58,
     type: 3}
   meshManager: {fileID: 2042508029}
   verticesList: {fileID: 139638432}
@@ -466,6 +473,90 @@ MonoBehaviour:
       - m_Target: {fileID: 34135101}
         m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
         m_MethodName: OnSelectVertex
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &34135108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34135096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7936cdef98934e8ea4dbe6419f6dd300, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEvent: {fileID: 11400000, guid: 6c83131bfeed0a04185c75731d222d5f, type: 2}
+  unityEventResponse:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 34135101}
+        m_TargetAssemblyTypeName: UI.UIManager, Assembly-CSharp
+        m_MethodName: OnDeSelectTriangle
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &34135109
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34135096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7936cdef98934e8ea4dbe6419f6dd300, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEvent: {fileID: 11400000, guid: 0338f566871b1e546aeff30880312a4c, type: 2}
+  unityEventResponse:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 34135101}
+        m_TargetAssemblyTypeName: UI.UIManager, Assembly-CSharp
+        m_MethodName: OnSelectTriangle
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &34135110
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 34135096}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7936cdef98934e8ea4dbe6419f6dd300, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameEvent: {fileID: 11400000, guid: 7e48072e3c766fa4fa76ecbb50a111a7, type: 2}
+  unityEventResponse:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 34135101}
+        m_TargetAssemblyTypeName: UI.UIManager, Assembly-CSharp
+        m_MethodName: OnTriangleCreate
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1763,7 +1854,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1230674405}
   m_HandleRect: {fileID: 1230674404}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2760,7 +2851,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1472357019}
   m_HandleRect: {fileID: 1472357018}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -4289,6 +4380,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1689031803}
   m_CullTransparentMesh: 1
+--- !u!1 &1703314814
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1703314816}
+  - component: {fileID: 1703314815}
+  m_Layer: 0
+  m_Name: TrinagleTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1703314815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703314814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7954c61aa4b24663bb36ac668c24f396, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vertices: []
+  next: 0
+--- !u!4 &1703314816
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1703314814}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1753877933
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,10 +8,10 @@ namespace Triangles
 {
     public class TriangleUI : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
-        private Guid guid;
+        public Guid guid;
 
-        [SerializeField] private GuidEvent vertexSelectEvent;
-        [SerializeField] private GuidEvent vertexDeSelectEvent;
+        [SerializeField] private GuidEvent triangleSelectEvent;
+        [SerializeField] private GuidEvent triangleDeSelectEvent;
 
         [SerializeField] private Color normalColor;
         [SerializeField] private Color hoverColor;
@@ -19,16 +19,10 @@ namespace Triangles
 
         private Image image;
         private bool isSelected;
-    
+
         private void Awake()
         {
             image = GetComponent<Image>();
-        }
-        
-        public TriangleUI Populate(Guid _guid)
-        {
-            guid = _guid;
-            return this;
         }
 
         public void Select()
@@ -47,11 +41,11 @@ namespace Triangles
         {
             if (isSelected)
             {            
-                vertexDeSelectEvent.Invoke(guid);
+                triangleDeSelectEvent.Invoke(guid);
             }
             else
             {
-                vertexSelectEvent.Invoke(guid);
+                triangleSelectEvent.Invoke(guid);
             }
         }
 
