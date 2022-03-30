@@ -67,6 +67,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Delete",
+                    "type": "Button",
+                    "id": "c2d1a70f-76fe-4922-a14a-03cce91cbb5a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "F2",
+                    "type": "Button",
+                    "id": "53253241-8bf3-435b-94f2-fd8cabde7dc5",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -166,6 +184,28 @@
                     "processors": "",
                     "groups": "Keyboard&Mouse",
                     "action": "LeftShift",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a3151bb0-36c7-441e-ac79-af2c01c9b44c",
+                    "path": "<Keyboard>/delete",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Delete",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e0b380d6-dd07-4960-b5ab-9d86dbdf1b15",
+                    "path": "<Keyboard>/f2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "F2",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

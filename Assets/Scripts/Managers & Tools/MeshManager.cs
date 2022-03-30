@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Managers___Tools;
 using Triangles;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Vertices;
@@ -16,57 +18,107 @@ public class MeshManager : MonoBehaviour
 
     [Header("References")] 
     [SerializeField] private MoveTool moveTool;
+    [SerializeField] private MeshFilter meshFilter;
+    [SerializeField] private MeshRenderer meshRenderer;
+    
+    public readonly Dictionary<Guid, Vertex> vertices = new();
+    public readonly List<Vertex> selectedVertices = new();
+
+    public readonly Dictionary<Guid, Triangle> triangles = new();
+    public Triangle selectedTriangle;
 
     private bool LeftControlPressed =>
         Math.Abs(leftControlInput.ToInputAction().ReadValue<float>() - 1) < float.Epsilon;
 
-    private readonly Dictionary<Guid, Vertex> vertices = new();
-    private readonly List<Vertex> selectedVertices = new();
-
-    private readonly Dictionary<Guid, Triangle> triangles = new();
-    private Triangle selectedTriangle;
-
     #region Events
 
+    public void OnDeleteSelected()
+    {
+        foreach (Vertex _vertex in selectedVertices)
+        {
+            _vertex.Delete();
+            vertices.Remove(_vertex.guid);
+        }
+        selectedVertices.Clear();
+
+        if (selectedTriangle != null)
+        {
+            triangles.Remove(selectedTriangle.guid);
+            selectedTriangle = null;
+        }
+        
+        ReRenderMesh();
+    }
+    
     #region Vertices
-    public void OnCreateVertex(Guid _guid)
+    /*public void OnVertexSelect(Guid _guid)
+        {
+            if (selectedTriangle != null)
+            {
+                selectedTriangle.SelectVertex(_guid);
+                ReRenderMesh();
+            }
+            else
+            {
+                SelectVertex(vertices[_guid]);
+            }
+        }
+
+        public void OnVertexDeSelect(Guid _guid)
+        {
+            if (LeftControlPressed)
+            {
+                DeSelectVertex(vertices[_guid]);
+            }
+            else
+            {
+                DeselectAllVertices();
+            }
+        }*/
+    #endregion
+
+    #region Triangles
+
+    /*public void OnCreateTriangle(Guid _guid)
     {
-        CreateVertex(_guid);
+        CreateTriangle(_guid);
     }
 
-    public void OnVertexSelect(Guid _guid)
+    public void OnTriangleSelect(Guid _guid)
     {
-        SelectVertex(vertices[_guid], LeftControlPressed);
+        SelectTriangle(_guid);
     }
 
-    public void OnVertexDeSelect(Guid _guid)
+    public void OnTriangleDeSelect(Guid _guid)
     {
-        if (LeftControlPressed)
-        {
-            DeSelectVertex(vertices[_guid]);
-        }
-        else
-        {
-            DeselectAllVertices();
-        }
-    }
+        DeSelectTriangle(_guid);
+    }*/
+
     #endregion
 
     #endregion
 
     #region Vertices
 
-    private void CreateVertex(Guid _guid)
+    public void CreateVertex(Guid _guid)
     {
         Vertex _vertex = Instantiate(vertexPrefab, transform).GetComponent<Vertex>();
         _vertex.guid = _guid;
         vertices.Add(_guid, _vertex);
-        SelectVertex(_vertex);
+        SelectVertex(_guid);
     }
-    
-    private void SelectVertex(Vertex _vertex, bool _addToOthers = false)
+
+    public void SelectVertex(Guid _guid)
     {
-        if (!_addToOthers)
+        if (selectedTriangle != null)
+        {
+            selectedTriangle.SelectVertex(_guid);
+            ReRenderMesh();
+            return;
+        }
+        
+        Vertex _vertex = vertices[_guid];
+        if (!LeftControlPressed)
         {
             foreach (Vertex _sVertex in selectedVertices)
             {
@@ -108,8 +160,9 @@ public class MeshManager : MonoBehaviour
         }
     }
 
-    private void DeSelectVertex(Vertex _vertex)
+    public void DeSelectVertex(Guid _guid)
     {
+        Vertex _vertex = vertices[_guid];
         selectedVertices.Remove(_vertex);
         _vertex.DeSelect();
         Vector3 _pos = default;
@@ -147,7 +200,7 @@ public class MeshManager : MonoBehaviour
         moveTool.SetPos(_pos);
     }
 
-    private void DeselectAllVertices()
+    public void DeSelectAllVertices()
     {
         moveTool.Hide();
         foreach (Vertex _vertex in selectedVertices)
@@ -198,39 +251,128 @@ public class MeshManager : MonoBehaviour
     
     #region Triangles
 
-    private void CreateTriangle()
+    public void CreateTriangle(Guid _guid)
     {
-        
+        Triangle _triangle = new Triangle(_guid);
+        triangles.Add(_guid, _triangle);
+        SelectTriangle(_guid);
     }
-    
-    private void SelectTriangle()
+
+    public void SelectTriangle(Guid _guid)
     {
-        
+        selectedTriangle = triangles[_guid];
+    }
+
+    public void DeSelectTriangle(Guid _guid)
+    {
+        selectedTriangle = null;
     }
     
     #endregion
 
-    #region Serialization&Desirialization
+    #region MeshPreview
 
-    public string ToJson()
+    public void ReRenderMesh()
     {
-        var _verticesValues = vertices.Values.ToArray();
-        Vector3[] verticesArray = new Vector3[vertices.Count];
-        for (int i = 0; i < verticesArray.Length; i++)
+        Vertex[] _verticesScript = vertices.Values.ToArray();
+        Guid[] _vertGuids = new Guid[_verticesScript.Length];
+        for (int i = 0; i < _verticesScript.Length; i++)
         {
-            verticesArray[i] = _verticesValues[i].transform.position;
+            _vertGuids[i] = _verticesScript[i].guid;
         }
-    
-        return JsonUtility.ToJson(new MeshData(verticesArray));
+
+        List<Vector3> _vertices = vertices.Values.Select(_vertex => _vertex.Position).ToList();
+        List<int> _triangles = new List<int>();
+        List<Vector2> _uvs = new List<Vector2>();
+        
+        foreach (Triangle _triangle in triangles.Values)
+        {
+            Guid[] _trisVerts = _triangle.GetVertices();
+            
+            if (_trisVerts[0] == Guid.Empty || _trisVerts[1] == Guid.Empty || _trisVerts[2] == Guid.Empty)
+                continue;
+                
+            for (int i = 0; i < 3; i++)
+            {
+                int _vertIndex = Array.IndexOf(_vertGuids, _trisVerts[i]);
+                _triangles.Add(_vertIndex);
+                if (selectedTriangle == _triangle)
+                    _uvs.Add(new Vector2(0, 0));
+                else
+                    _uvs.Add(new Vector2(0, 1));
+            }
+        }
+        
+
+        if (_vertices.Count == 0 || _triangles.Count == 0)
+        {
+            meshFilter.mesh = null;
+        }
+        else
+        {
+            Mesh _mesh = new Mesh
+            {
+                vertices = _vertices.ToArray(),
+                triangles = _triangles.ToArray()
+            };
+            meshFilter.mesh = _mesh;
+            /*LogHelper.LogArray(_triangles, nameof(_triangles));
+            LogHelper.LogArray(_vertices, nameof(_vertices));*/
+        }
     }
 
-    private struct MeshData
+    #endregion
+
+    #region Serialization&Desirialization
+
+    public void ToJson()
+    {
+        Vertex[] _verticesScript = vertices.Values.ToArray();
+        Guid[] _vertGuids = new Guid[_verticesScript.Length];
+        for (int i = 0; i < _verticesScript.Length; i++)
+        {
+            _vertGuids[i] = _verticesScript[i].guid;
+        }
+
+        List<Vector3> _vertices = vertices.Values.Select(_vertex => _vertex.Position).ToList();
+        List<int> _triangles = new List<int>();
+        List<Vector2> _uvs = new List<Vector2>();
+        
+        foreach (Triangle _triangle in triangles.Values)
+        {
+            Guid[] _trisVerts = _triangle.GetVertices();
+            
+            if (_trisVerts[0] == Guid.Empty || _trisVerts[1] == Guid.Empty || _trisVerts[2] == Guid.Empty)
+                continue;
+                
+            for (int i = 0; i < 3; i++)
+            {
+                int _vertIndex = Array.IndexOf(_vertGuids, _trisVerts[i]);
+                _triangles.Add(_vertIndex);
+                if (selectedTriangle == _triangle)
+                    _uvs.Add(new Vector2(0, 0));
+                else
+                    _uvs.Add(new Vector2(0, 1));
+            }
+        }
+
+        string _json =
+            JsonUtility.ToJson(new MeshInfo(_vertices.ToArray(), _triangles.ToArray(), _uvs.ToArray()), true);
+        Debug.Log(_json);
+        //return _json;
+    }
+
+    private struct MeshInfo
     {
         public Vector3[] vertices;
+        public int[] triangles;
+        public Vector2[] uvs;
 
-        public MeshData(Vector3[] _vertices)
+        public MeshInfo(Vector3[] _vertices, int[] _triangles, Vector2[] _uvs)
         {
             vertices = _vertices;
+            triangles = _triangles;
+            uvs = _uvs;
         }
     }
 

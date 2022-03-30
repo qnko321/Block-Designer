@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 namespace Vertices
@@ -8,7 +9,9 @@ namespace Vertices
         public Guid guid;
 
         private Outline outline;
-
+        public string vertName = "Vertex";
+        public Vector3 Position => transform.position;
+        
         private void Awake()
         {
             outline = GetComponent<Outline>();
@@ -22,6 +25,11 @@ namespace Vertices
         public void DeSelect()
         {
             outline.enabled = false;
+        }
+
+        public void Delete()
+        {
+            Destroy(gameObject);
         }
     }
 }

@@ -1,4 +1,4 @@
-using Events;
+using UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Vertices;
@@ -9,11 +9,7 @@ namespace Controllers
     {
         [Header("References")]
         [SerializeField] private MeshManager meshManager;
-    
-        [Header("Events")]
-        [SerializeField] private GuidEvent selectVertexEvent;
-        [SerializeField] private GuidEvent deSelectVertexEvent;
-    
+        [SerializeField] private UIManager uiManager;
 
         [Header("Settings")] 
         [SerializeField] private float moveSpeed = 3f;
@@ -134,11 +130,13 @@ namespace Controllers
                     Vertex _vertex = _hitInfo.transform.gameObject.GetComponent<Vertex>();
                     if (meshManager.IsVertexSelected(_vertex))
                     {
-                        deSelectVertexEvent.Invoke(_vertex.guid);
+                        meshManager.DeSelectVertex(_vertex.guid);
+                        uiManager.DeSelectVertex(_vertex.guid);
                     }
                     else
                     {
-                        selectVertexEvent.Invoke(_vertex.guid);
+                        meshManager.SelectVertex(_vertex.guid);
+                        uiManager.SelectVertex(_vertex.guid, leftShiftPressed);
                     }
                 }
             }

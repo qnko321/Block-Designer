@@ -33,7 +33,7 @@ Transform:
   - {fileID: 6326233531421127613}
   - {fileID: 7711768506906794294}
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6500028917815215402
 MonoBehaviour:
@@ -135,6 +135,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,
         type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: b35fa123c2cf7504ab9ec7aa82f062d3, type: 2}
@@ -170,26 +175,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 3.0393586, y: 3.0393593, z: 1.8184133}
   m_Center: {x: 0, y: 0, z: -0.08972209}
---- !u!114 &2064852935063241999
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3954010824068770886}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2339dfa126b444319ac35cc034386151, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  leftClickInput: {fileID: -8669345355553304486, guid: 5729719a20b347f4496c78e868928ddc,
-    type: 3}
-  mousePositionInput: {fileID: 6062645644270272503, guid: 5729719a20b347f4496c78e868928ddc,
-    type: 3}
-  xArrow: {fileID: 0}
-  yArrow: {fileID: 0}
-  zArrow: {fileID: 0}
-  moveAxis: 0
 --- !u!4 &4437355467862931196 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,
@@ -276,6 +261,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,
         type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: fc2e1852fca494c4abb1deca0a361692, type: 2}
@@ -317,26 +307,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 3.0393586, y: 3.0393586, z: 1.8184128}
   m_Center: {x: 0, y: 0, z: -0.08972207}
---- !u!114 &3176621052240784240
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6665498206143850759}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2339dfa126b444319ac35cc034386151, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  leftClickInput: {fileID: -8669345355553304486, guid: 5729719a20b347f4496c78e868928ddc,
-    type: 3}
-  mousePositionInput: {fileID: 6062645644270272503, guid: 5729719a20b347f4496c78e868928ddc,
-    type: 3}
-  xArrow: {fileID: 0}
-  yArrow: {fileID: 0}
-  zArrow: {fileID: 0}
-  moveAxis: 0
 --- !u!1001 &7822486352053944029
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -417,6 +387,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,
         type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,
+        type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: b54240912d0a3714aba533c2385254a6, type: 2}
@@ -452,26 +427,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 3.0393593, y: 3.0393586, z: 1.8184133}
   m_Center: {x: 0, y: 0, z: -0.08972209}
---- !u!114 &3493027348905330920
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6939594257682989964}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2339dfa126b444319ac35cc034386151, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  leftClickInput: {fileID: -8669345355553304486, guid: 5729719a20b347f4496c78e868928ddc,
-    type: 3}
-  mousePositionInput: {fileID: 6062645644270272503, guid: 5729719a20b347f4496c78e868928ddc,
-    type: 3}
-  xArrow: {fileID: 0}
-  yArrow: {fileID: 0}
-  zArrow: {fileID: 0}
-  moveAxis: 0
 --- !u!4 &7711768506906794294 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2b5f6cb0e6df01746a9f74d942d31cf1,

@@ -3,21 +3,18 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Enums;
-using Events;
 using TMPro;
 using Triangles;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using Vertices;
+// ReSharper disable ConvertIfStatementToConditionalTernaryExpression
 
 namespace UI
 {
     public class UIManager : MonoBehaviour
     {
-        [Header("Events")] 
-        [SerializeField] private GuidEvent vertexCreateEvent;
-        [SerializeField] private GuidEvent triangleCreateEvent;
-
         [Header("Input")] 
         [SerializeField] private InputActionReference leftControlInput;
 
@@ -28,27 +25,45 @@ namespace UI
         [Header("References")] 
         [SerializeField] private MeshManager meshManager;
         [SerializeField] private GameObject verticesList;
+        [SerializeField] private Image verticesListButtonImage;
         [SerializeField] private GameObject trianglesList;
+        [SerializeField] private Image trianglesListButtonImage;
         [SerializeField] private Transform verticesParent;
         [SerializeField] private Transform trianglesParent;
         [SerializeField] private AutoContentSize autoContentSizeVertices;
         [SerializeField] private AutoContentSize autoContentSizeTriangles;
 
-        [Header("Inspector")]
+        [Header("Vertex Inspector")] 
+        [SerializeField] private GameObject vertexInspector;
+        [SerializeField] private TMP_Text nameText;
         [SerializeField] private TMP_InputField xPosInput;
         [SerializeField] private TMP_InputField yPosInput;
         [SerializeField] private TMP_InputField zPosInput;
 
+        [Header("Triangle Inspector")] 
+        [SerializeField] private GameObject triangleInspector;
+        [SerializeField] private TMP_Text firstVertName;
+        [SerializeField] private TMP_Text secondVertName;
+        [SerializeField] private TMP_Text thirdVertName;
+
+        [Header("Settings")] 
+        [SerializeField] private Color normalMenuColor;
+        [SerializeField] private Color selectedMenuColor;
+        
+        
         private bool LeftControlPressed => Math.Abs(leftControlInput.ToInputAction().ReadValue<float>() - 1) < float.Epsilon;
 
-        private readonly Dictionary<Guid, VertexUI> vertexUIs = new();
-        private readonly Dictionary<Guid, TriangleUI> triangleUIs = new();
+        private readonly Dictionary<Guid, VertexUI> vertexUis = new();
         private readonly Dictionary<Guid, VertexUI> selectedVertices = new();
+        
+        private readonly Dictionary<Guid, TriangleUI> triangleUIs = new();
+        private TriangleUI selectedTriangle;
 
         private CurrentMenu currentMenu;
         private GameObject currentList;
 
         private Vertex inspectorVertex;
+        
 
         private void Awake()
         {
@@ -65,100 +80,96 @@ namespace UI
 
         private void UpdateInspector()
         {
-            if (inspectorVertex == null)
+            if (vertexInspector.activeSelf)
             {
-                xPosInput.text = "-";
-                yPosInput.text = "-";
-                zPosInput.text = "-";
+                if (selectedVertices.Count != 1)
+                {
+                    inspectorVertex = null;
+                    
+                    xPosInput.text = "-";
+                    yPosInput.text = "-";
+                    zPosInput.text = "-";
+                }
+                else
+                {
+                    Guid _guid = selectedVertices.Values.ToArray()[0].guid;
+                    inspectorVertex = meshManager.vertices[_guid];
+                    var _position = inspectorVertex.transform.position;
+                    nameText.text = inspectorVertex.vertName;
+                    if (!xPosInput.isFocused)
+                        xPosInput.text = _position.x.ToString(CultureInfo.InvariantCulture);
+                    if (!yPosInput.isFocused)
+                        yPosInput.text = _position.y.ToString(CultureInfo.InvariantCulture);
+                    if (!zPosInput.isFocused)
+                        zPosInput.text = _position.z.ToString(CultureInfo.InvariantCulture);
+                }
             }
-            else
+
+            if (triangleInspector.activeSelf)
             {
-                var _position = inspectorVertex.transform.position;
-                if (!xPosInput.isFocused)
-                    xPosInput.text = _position.x.ToString(CultureInfo.InvariantCulture);
-                if (!yPosInput.isFocused)
-                    yPosInput.text = _position.y.ToString(CultureInfo.InvariantCulture);
-                if (!zPosInput.isFocused)
-                    zPosInput.text = _position.z.ToString(CultureInfo.InvariantCulture);
+                if (selectedTriangle == null)
+                {
+                    firstVertName.text = "-";
+                    secondVertName.text = "-";
+                    thirdVertName.text = "-";
+                }
+                else
+                {
+                    Triangle _triangle = meshManager.triangles[selectedTriangle.guid];
+                    Guid[] _vertices = _triangle.GetVertices();
+                    if (_vertices[0] != Guid.Empty)
+                    {
+                        firstVertName.text = meshManager.vertices[_vertices[0]].vertName;
+                    }
+                    else
+                    {
+                        firstVertName.text = "-";
+                    }
+                    if (_vertices[1] != Guid.Empty)
+                    {
+                        secondVertName.text = meshManager.vertices[_vertices[1]].vertName;
+                    }
+                    else
+                    {
+                        secondVertName.text = "-";
+                    }
+                    if (_vertices[2] != Guid.Empty)
+                    {
+                        thirdVertName.text = meshManager.vertices[_vertices[2]].vertName;
+                    }
+                    else
+                    {
+                        thirdVertName.text = "-";
+                    }
+                }
             }
         }
 
-        private void UpdateInspectorValues()
-        {
-            if (selectedVertices.Count == 1)
-            {
-                Guid _guid = selectedVertices.Values.ToArray()[0].guid;
-                Vertex _vertex = meshManager.GetVertex(_guid);
-                inspectorVertex = _vertex;
-            }
-            else
-            {
-                inspectorVertex = null;
-            }
-        }
-    
         #region Events
 
-        #region Vertices
-
-        public void OnVertexCreate(Guid _guid)
+        public void OnDeleteSelected()
         {
-            VertexUI _vertexUI = Instantiate(vertexUIPrefab, verticesParent).GetComponent<VertexUI>().Populate(_guid);
-            autoContentSizeVertices.CorrectSize();
-            vertexUIs.Add(_guid, _vertexUI);
-            DeselectAllVertices();
-            _vertexUI.Select();
-            selectedVertices.Add(_guid, _vertexUI);
-                
-            SelectVertex(_guid, false);
-        }
-            
-        public void OnSelectVertex(Guid _guid)
-        {
-            SelectVertex(_guid, LeftControlPressed);
-        }
-            
-        public void OnDeSelectVertex(Guid _guid)
-        {
-            if (LeftControlPressed)
+            foreach (VertexUI _vertex in selectedVertices.Values)
             {
-                DeSelectVertex(_guid);
+                _vertex.Delete();
+                vertexUis.Remove(_vertex.guid);
             }
-            else
+
+            int _subtract = selectedVertices.Count;
+            selectedVertices.Clear();
+            autoContentSizeVertices.CorrectSize(_subtract);
+
+            if (selectedTriangle != null)
             {
-                DeselectAllVertices();
+                triangleUIs.Remove(selectedTriangle.guid);
+                selectedTriangle.Delete();
+                selectedTriangle = null;
+                autoContentSizeTriangles.CorrectSize(1);
             }
         }
 
-        #endregion
+        #region Inspector
 
-        #region Triangles
-
-        public void OnTriangleCreate(Guid _guid)
-        {
-            GameObject _triangleUIObject = Instantiate(triangleUIPrefab, trianglesParent);
-            TriangleUI _triUi = _triangleUIObject.GetComponent<TriangleUI>();
-            _triUi.guid = _guid;
-            autoContentSizeTriangles.CorrectSize();
-            triangleUIs.Add(_guid, _triUi);
-            DeselectAllVertices();
-            _triUi.Select();
-
-            SelectTriangle(_guid);
-        }
-        
-        public void OnSelectTriangle(Guid _guid)
-        {
-            SelectTriangle(_guid);
-        }
-        
-        public void OnDeSelectTriangle(Guid _guid)
-        {
-            DeSelectTriangle(_guid);
-        }
-
-        #endregion
-        
         public void OnXPosValueChange(string _strValue)
         {
             if (inspectorVertex == null) return;
@@ -245,6 +256,8 @@ namespace UI
 
         #endregion
 
+        #endregion
+
         #region UI
     
         public void TrianglesClick()
@@ -253,25 +266,40 @@ namespace UI
             currentList = trianglesList;
             currentList.SetActive(true);
             currentMenu = CurrentMenu.Triangles;
+            verticesListButtonImage.color = normalMenuColor;
+            trianglesListButtonImage.color = selectedMenuColor;
+            DeselectAllVertices();
+            meshManager.DeSelectAllVertices();
         }
         
         public void VerticesClick()
         {
-            if (currentList != null)  currentList.SetActive(false);
+            if (currentList != null) currentList.SetActive(false);
             currentList = verticesList;
             currentList.SetActive(true);
             currentMenu = CurrentMenu.Vertices;
+            trianglesListButtonImage.color = normalMenuColor;
+            verticesListButtonImage.color = selectedMenuColor;
+            if (selectedTriangle != null)
+            {
+                Guid _triGuid = selectedTriangle.guid;
+                DeSelectTriangle(_triGuid);
+                meshManager.DeSelectTriangle(_triGuid);
+            }
         }
 
         public void Create()
         {
+            Guid _guid = Guid.NewGuid();
             switch (currentMenu)
             {
                 case CurrentMenu.Vertices:
-                    vertexCreateEvent.Invoke(Guid.NewGuid());
+                    CreateVertex(_guid);
+                    meshManager.CreateVertex(_guid);
                     break;
                 case CurrentMenu.Triangles:
-                    triangleCreateEvent.Invoke(Guid.NewGuid());
+                    CreateTriangle(_guid);
+                    meshManager.CreateTriangle(_guid);
                     break;
                 default:
                     Debug.LogError("No Menu Selected");
@@ -279,33 +307,78 @@ namespace UI
             }
         }
 
+        private void CreateVertex(Guid _guid)
+        {
+            VertexUI _vertexUI = Instantiate(vertexUIPrefab, verticesParent).GetComponent<VertexUI>().Populate(_guid, OnClickVertex, RenameVertex);
+            autoContentSizeVertices.CorrectSize();
+            vertexUis.Add(_guid, _vertexUI);
+            DeselectAllVertices();
+            _vertexUI.Select();
+            selectedVertices.Add(_guid, _vertexUI);
+                
+            SelectVertex(_guid, false);
+        }
+
+        private void CreateTriangle(Guid _guid)
+        {
+            GameObject _triangleUIObject = Instantiate(triangleUIPrefab, trianglesParent);
+            TriangleUI _triUi = _triangleUIObject.GetComponent<TriangleUI>();
+            _triUi.Populate(_guid, OnTriangleClick, RenameTriangle);
+            autoContentSizeTriangles.CorrectSize();
+            triangleUIs.Add(_guid, _triUi);
+
+            DeselectAllVertices();
+            SelectTriangle(_guid);
+        }
+        
         #endregion
 
         #region Vertices
 
-        private void SelectVertex(Guid _guid, bool _addToOthers = true)
+        private void RenameVertex(Guid _guid, string _name)
         {
+            meshManager.vertices[_guid].vertName = _name;
+        }
+        
+        private void OnClickVertex(Guid _guid, bool _isSelected)
+        {
+            if (_isSelected)
+            {
+                SelectVertex(_guid, LeftControlPressed);
+                meshManager.SelectVertex(_guid);
+            }
+            else
+            {
+                DeSelectVertex(_guid);
+                meshManager.DeSelectVertex(_guid);
+            }
+        }
+
+        public void SelectVertex(Guid _guid, bool _addToOthers = true)
+        {
+            if (selectedTriangle != null) return;
+            // 20, 20, 255 - blue
+            // 255, 20, 20 - red
             if (_addToOthers)
             {
-                selectedVertices.Add(_guid, vertexUIs[_guid]);
+                selectedVertices.Add(_guid, vertexUis[_guid]);
                 selectedVertices[_guid].Select();
             }
             else
             {
                 DeselectAllVertices();
-                selectedVertices.Add(_guid, vertexUIs[_guid]);
+                selectedVertices.Add(_guid, vertexUis[_guid]);
                 selectedVertices[_guid].Select();
             }
 
-            UpdateInspectorValues();
+            triangleInspector.SetActive(false);
+            vertexInspector.SetActive(true);
         }
-        
-        private void DeSelectVertex(Guid _guid)
+
+        public void DeSelectVertex(Guid _guid)
         {
             selectedVertices[_guid].DeSelect();
             selectedVertices.Remove(_guid);
-
-            UpdateInspectorValues();
         }
         
         private void DeselectAllVertices()
@@ -321,14 +394,42 @@ namespace UI
 
         #region Triangles
 
+        private void RenameTriangle(Guid _guid, string _name)
+        {
+            meshManager.triangles[_guid].triName = _name;
+        }
+        
+        private void OnTriangleClick(Guid _guid, bool _isSelected)
+        {
+            if (_isSelected)
+            {
+                SelectTriangle(_guid);
+                meshManager.SelectTriangle(_guid);
+            }
+            else
+            {
+                DeSelectTriangle(_guid);
+                meshManager.DeSelectTriangle(_guid);
+            }
+        }
+        
         private void SelectTriangle(Guid _guid)
         {
-            // TODO: select triangle
+            DeselectAllVertices();
+            if (selectedTriangle != null)
+                selectedTriangle.DeSelect();
+            
+            selectedTriangle = triangleUIs[_guid];
+            selectedTriangle.Select();
+            
+            vertexInspector.SetActive(false);
+            triangleInspector.SetActive(true);
         }
 
         private void DeSelectTriangle(Guid _guid)
         {
-            // TODO: de select triangle
+            triangleUIs[_guid].DeSelect();
+            selectedTriangle = null;
         }
 
         #endregion
