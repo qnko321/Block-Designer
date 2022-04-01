@@ -49,52 +49,6 @@ public class MeshManager : MonoBehaviour
         
         ReRenderMesh();
     }
-    
-    #region Vertices
-    /*public void OnVertexSelect(Guid _guid)
-        {
-            if (selectedTriangle != null)
-            {
-                selectedTriangle.SelectVertex(_guid);
-                ReRenderMesh();
-            }
-            else
-            {
-                SelectVertex(vertices[_guid]);
-            }
-        }
-
-        public void OnVertexDeSelect(Guid _guid)
-        {
-            if (LeftControlPressed)
-            {
-                DeSelectVertex(vertices[_guid]);
-            }
-            else
-            {
-                DeselectAllVertices();
-            }
-        }*/
-    #endregion
-
-    #region Triangles
-
-    /*public void OnCreateTriangle(Guid _guid)
-    {
-        CreateTriangle(_guid);
-    }
-
-    public void OnTriangleSelect(Guid _guid)
-    {
-        SelectTriangle(_guid);
-    }
-
-    public void OnTriangleDeSelect(Guid _guid)
-    {
-        DeSelectTriangle(_guid);
-    }*/
-
-    #endregion
 
     #endregion
 
@@ -325,7 +279,12 @@ public class MeshManager : MonoBehaviour
 
     #region Serialization&Desirialization
 
-    public void ToJson()
+    public void Export()
+    {
+        FileDialog.instance.SaveString(ToJson(true));
+    }
+
+    private string ToJson(bool _prettyJson)
     {
         Vertex[] _verticesScript = vertices.Values.ToArray();
         Guid[] _vertGuids = new Guid[_verticesScript.Length];
@@ -349,17 +308,17 @@ public class MeshManager : MonoBehaviour
             {
                 int _vertIndex = Array.IndexOf(_vertGuids, _trisVerts[i]);
                 _triangles.Add(_vertIndex);
-                if (selectedTriangle == _triangle)
+                // TODO: Fix uvs
+                /*if (selectedTriangle == _triangle)
                     _uvs.Add(new Vector2(0, 0));
                 else
-                    _uvs.Add(new Vector2(0, 1));
+                    _uvs.Add(new Vector2(0, 1));*/
             }
         }
 
         string _json =
-            JsonUtility.ToJson(new MeshInfo(_vertices.ToArray(), _triangles.ToArray(), _uvs.ToArray()), true);
-        Debug.Log(_json);
-        //return _json;
+            JsonUtility.ToJson(new MeshInfo(_vertices.ToArray(), _triangles.ToArray(), _uvs.ToArray()), _prettyJson);
+        return _json;
     }
 
     private struct MeshInfo

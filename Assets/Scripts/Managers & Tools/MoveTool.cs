@@ -85,7 +85,7 @@ namespace Managers___Tools
         private void OnMousePosition(InputAction.CallbackContext _ctx)
         {
             mousePos = _ctx.ReadValue<Vector2>();
-            if (Math.Abs(startPos.x - mousePos.x) > Constants.DragTolerance || Math.Abs(startPos.y - mousePos.y) > Constants.DragTolerance)
+            if (Math.Abs(startPos.x - mousePos.x) > Constants.DRAG_TOLERANCE || Math.Abs(startPos.y - mousePos.y) > Constants.DRAG_TOLERANCE)
             {
                 if (!isMouseDown) return;
 

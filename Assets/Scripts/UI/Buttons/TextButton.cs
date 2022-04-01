@@ -1,9 +1,10 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ImageButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+public class TextButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     [Header("Settings")] 
     [SerializeField] private Color normalColor;
@@ -13,13 +14,13 @@ public class ImageButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     [Header("References")] 
     [SerializeField] private UnityEvent onClick;
     
-    private Image image;
+    private TMP_Text text;
     private bool isHovered;
     private bool isClicked;
 
     private void Awake()
     {
-        image = GetComponent<Image>();
+        text = GetComponent<TMP_Text>();
     }
     public void OnPointerEnter(PointerEventData _eventData)
     {
@@ -43,12 +44,12 @@ public class ImageButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHand
     {
         isClicked = false;
         ChangeColor();
+        
         onClick.Invoke();
-        Debug.Log(onClick.GetPersistentMethodName(0));
     }
 
     private void ChangeColor()
     {
-        image.color = isClicked ? clickColor : isHovered ? hoverColor : normalColor;
+        text.color = isClicked ? clickColor : isHovered ? hoverColor : normalColor;
     }
 }

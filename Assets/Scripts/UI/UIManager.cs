@@ -5,6 +5,7 @@ using System.Linq;
 using Enums;
 using TMPro;
 using Triangles;
+using UI.Automation;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -17,6 +18,7 @@ namespace UI
     {
         [Header("Input")] 
         [SerializeField] private InputActionReference leftControlInput;
+        [SerializeField] private InputActionReference deleteInput;
 
         [Header("Prefabs")] 
         [SerializeField] private GameObject vertexUIPrefab;
@@ -30,8 +32,8 @@ namespace UI
         [SerializeField] private Image trianglesListButtonImage;
         [SerializeField] private Transform verticesParent;
         [SerializeField] private Transform trianglesParent;
-        [SerializeField] private AutoContentSize autoContentSizeVertices;
-        [SerializeField] private AutoContentSize autoContentSizeTriangles;
+        [SerializeField] private AutoContentSizeVerticalLayout autoContentSizeVertices;
+        [SerializeField] private AutoContentSizeVerticalLayout autoContentSizeTriangles;
 
         [Header("Vertex Inspector")] 
         [SerializeField] private GameObject vertexInspector;
@@ -51,7 +53,7 @@ namespace UI
         [SerializeField] private Color selectedMenuColor;
         
         
-        private bool LeftControlPressed => Math.Abs(leftControlInput.ToInputAction().ReadValue<float>() - 1) < float.Epsilon;
+        private bool leftControlPressed = false;
 
         private readonly Dictionary<Guid, VertexUI> vertexUis = new();
         private readonly Dictionary<Guid, VertexUI> selectedVertices = new();
@@ -72,6 +74,26 @@ namespace UI
             verticesList.SetActive(true);
             trianglesList.SetActive(false);
         }
+
+        private void OnEnable()
+        {
+            leftControlInput.ToInputAction().started += OnLeftControlDown;
+            leftControlInput.ToInputAction().canceled += OnLeftControlUp;
+
+            deleteInput.ToInputAction().started += OnDeleteSelected;
+        }
+
+        private void OnDisable()
+        {
+            leftControlInput.ToInputAction().started -= OnLeftControlDown;
+            leftControlInput.ToInputAction().canceled -= OnLeftControlUp;
+            
+            deleteInput.ToInputAction().started -= OnDeleteSelected;
+        }
+        
+        private void OnLeftControlDown(InputAction.CallbackContext _ctx) => leftControlPressed = true;
+
+        private void OnLeftControlUp(InputAction.CallbackContext _ctx) => leftControlPressed = false;
 
         private void FixedUpdate()
         {
@@ -147,8 +169,9 @@ namespace UI
 
         #region Events
 
-        public void OnDeleteSelected()
+        public void OnDeleteSelected(InputAction.CallbackContext _ctx)
         {
+            meshManager.OnDeleteSelected();
             foreach (VertexUI _vertex in selectedVertices.Values)
             {
                 _vertex.Delete();
@@ -268,8 +291,8 @@ namespace UI
             currentMenu = CurrentMenu.Triangles;
             verticesListButtonImage.color = normalMenuColor;
             trianglesListButtonImage.color = selectedMenuColor;
-            DeselectAllVertices();
-            meshManager.DeSelectAllVertices();
+            /*DeselectAllVertices();
+            meshManager.DeSelectAllVertices();*/
         }
         
         public void VerticesClick()
@@ -280,12 +303,12 @@ namespace UI
             currentMenu = CurrentMenu.Vertices;
             trianglesListButtonImage.color = normalMenuColor;
             verticesListButtonImage.color = selectedMenuColor;
-            if (selectedTriangle != null)
+            /*if (selectedTriangle != null)
             {
                 Guid _triGuid = selectedTriangle.guid;
                 DeSelectTriangle(_triGuid);
                 meshManager.DeSelectTriangle(_triGuid);
-            }
+            }*/
         }
 
         public void Create()
@@ -344,7 +367,7 @@ namespace UI
         {
             if (_isSelected)
             {
-                SelectVertex(_guid, LeftControlPressed);
+                SelectVertex(_guid, leftControlPressed);
                 meshManager.SelectVertex(_guid);
             }
             else
