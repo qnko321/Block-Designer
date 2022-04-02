@@ -23,6 +23,7 @@ namespace UI
         [Header("Prefabs")] 
         [SerializeField] private GameObject vertexUIPrefab;
         [SerializeField] private GameObject triangleUIPrefab;
+        [SerializeField] private GameObject faceUIPrefab;
 
         [Header("References")] 
         [SerializeField] private MeshManager meshManager;
@@ -32,8 +33,10 @@ namespace UI
         [SerializeField] private Image trianglesListButtonImage;
         [SerializeField] private Transform verticesParent;
         [SerializeField] private Transform trianglesParent;
+        [SerializeField] private Transform faceParent;
         [SerializeField] private AutoContentSizeVerticalLayout autoContentSizeVertices;
         [SerializeField] private AutoContentSizeVerticalLayout autoContentSizeTriangles;
+        [SerializeField] private TMP_Text createDropdownLabel;
 
         [Header("Vertex Inspector")] 
         [SerializeField] private GameObject vertexInspector;
@@ -48,11 +51,7 @@ namespace UI
         [SerializeField] private TMP_Text secondVertName;
         [SerializeField] private TMP_Text thirdVertName;
 
-        [Header("Settings")] 
-        [SerializeField] private Color normalMenuColor;
-        [SerializeField] private Color selectedMenuColor;
-        
-        
+
         private bool leftControlPressed = false;
 
         private readonly Dictionary<Guid, VertexUI> vertexUis = new();
@@ -61,19 +60,8 @@ namespace UI
         private readonly Dictionary<Guid, TriangleUI> triangleUIs = new();
         private TriangleUI selectedTriangle;
 
-        private CurrentMenu currentMenu;
-        private GameObject currentList;
-
         private Vertex inspectorVertex;
         
-
-        private void Awake()
-        {
-            currentMenu = CurrentMenu.Vertices;
-            currentList = verticesList;
-            verticesList.SetActive(true);
-            trianglesList.SetActive(false);
-        }
 
         private void OnEnable()
         {
@@ -282,45 +270,23 @@ namespace UI
         #endregion
 
         #region UI
-    
-        public void TrianglesClick()
-        {
-            if (currentList != null) currentList.SetActive(false);
-            currentList = trianglesList;
-            currentList.SetActive(true);
-            currentMenu = CurrentMenu.Triangles;
-            verticesListButtonImage.color = normalMenuColor;
-            trianglesListButtonImage.color = selectedMenuColor;
-            /*DeselectAllVertices();
-            meshManager.DeSelectAllVertices();*/
-        }
-        
-        public void VerticesClick()
-        {
-            if (currentList != null) currentList.SetActive(false);
-            currentList = verticesList;
-            currentList.SetActive(true);
-            currentMenu = CurrentMenu.Vertices;
-            trianglesListButtonImage.color = normalMenuColor;
-            verticesListButtonImage.color = selectedMenuColor;
-            /*if (selectedTriangle != null)
-            {
-                Guid _triGuid = selectedTriangle.guid;
-                DeSelectTriangle(_triGuid);
-                meshManager.DeSelectTriangle(_triGuid);
-            }*/
-        }
 
-        public void Create()
+        public void Create(int _type)
         {
+            createDropdownLabel.text = "Create";
+            
             Guid _guid = Guid.NewGuid();
-            switch (currentMenu)
+            switch (_type)
             {
-                case CurrentMenu.Vertices:
+                case 0:
+                    CreateFace(_guid);
+                    meshManager.CreateFace(_guid);
+                    break;
+                case 1:
                     CreateVertex(_guid);
                     meshManager.CreateVertex(_guid);
                     break;
-                case CurrentMenu.Triangles:
+                case 2:
                     CreateTriangle(_guid);
                     meshManager.CreateTriangle(_guid);
                     break;
@@ -330,9 +296,16 @@ namespace UI
             }
         }
 
+        private void CreateFace(Guid _guid)
+        {
+            FaceUI _faceUI = Instantiate(faceUIPrefab, faceParent).GetComponent<FaceUI>()
+                .Populate(_guid, OnClickFace, RenameFace);
+        }
+
         private void CreateVertex(Guid _guid)
         {
-            VertexUI _vertexUI = Instantiate(vertexUIPrefab, verticesParent).GetComponent<VertexUI>().Populate(_guid, OnClickVertex, RenameVertex);
+            VertexUI _vertexUI = Instantiate(vertexUIPrefab, verticesParent).GetComponent<VertexUI>()
+                .Populate(_guid, OnClickVertex, RenameVertex);
             autoContentSizeVertices.CorrectSize();
             vertexUis.Add(_guid, _vertexUI);
             DeselectAllVertices();
@@ -356,6 +329,29 @@ namespace UI
         
         #endregion
 
+        #region Faces
+
+        private void RenameFace(Guid _guid, string _name)
+        {
+            meshManager.faces[_guid].faceName = _name;
+        }
+        
+        private void OnFaceClick(Guid _guid, bool _isSelected)
+        {
+            if (_isSelected)
+            {
+                SelectFace(_guid);
+                meshManager.SelectFace(_guid);
+            }
+            else
+            {
+                DeSelectFace(_guid);
+                meshManager.DeSelectFace(_guid);
+            }
+        }
+
+        #endregion
+        
         #region Vertices
 
         private void RenameVertex(Guid _guid, string _name)

@@ -4,15 +4,9 @@ namespace Triangles
 {
     public class Triangle
     {
-        public Guid guid;
         private Guid[] vertices = new Guid[3];
         private int next;
-        public string triName;
-
-        public Triangle(Guid _guid)
-        {
-            guid = _guid;
-        }
+        public string triName = "Triangle";
 
         public void SelectVertex(Guid _guid)
         {

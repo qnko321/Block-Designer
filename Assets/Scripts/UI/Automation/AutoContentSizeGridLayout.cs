@@ -3,7 +3,7 @@ using UnityEngine.UI;
 
 namespace UI.Automation
 {
-    public class AutoContentSizeGridLayout : MonoBehaviour
+    public class AutoContentSizeGridLayout : AutoSizer
     {
         private RectTransform rTrans;
         private GridLayoutGroup layoutGroup;
@@ -13,20 +13,14 @@ namespace UI.Automation
         {
             rTrans = (RectTransform) transform;
             layoutGroup = GetComponent<GridLayoutGroup>();
-            //CorrectSize();
         }
 
-        public void CorrectSize()
+        public override void CorrectSize()
         {
-            rTrans.sizeDelta = new Vector2(0, CalculateHeight());
-        }
-    
-        public void CorrectSize(int _subtract)
-        {
-            rTrans.sizeDelta = new Vector2(0, CalculateHeight(_subtract));
+            rTrans.sizeDelta = new Vector2(rTrans.sizeDelta.x,  dynamicChildSize ? CalculateHeight() : CalculateDynamicHeight());
         }
 
-        private float CalculateHeight()
+        protected override float CalculateHeight()
         {
             //Debug.Log("Width: " + rTrans.sizeDelta.x);
             //Debug.Log("Cell size + spacing: " + (layoutGroup.cellSize.x + layoutGroup.spacing.x));
@@ -37,12 +31,9 @@ namespace UI.Automation
             return _rowCount * layoutGroup.cellSize.y + (_rowCount - 1) * layoutGroup.spacing.y;
         }
 
-        private float CalculateHeight(int _subtract)
+        protected override float CalculateDynamicHeight()
         {
-            int _childrenOnOneRow = (rTrans.childCount - _subtract) / Mathf.RoundToInt(rTrans.sizeDelta.x / (layoutGroup.cellSize.x + layoutGroup.spacing.x));
-            int _rowCount = Mathf.CeilToInt(((float)rTrans.childCount - _subtract) / _childrenOnOneRow);
-            
-            return _rowCount * layoutGroup.cellSize.y + (_rowCount - 1) * layoutGroup.spacing.y;
+            return 0;
         }
     }
 }

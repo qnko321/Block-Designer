@@ -19,14 +19,10 @@ public class MeshManager : MonoBehaviour
     [Header("References")] 
     [SerializeField] private MoveTool moveTool;
     [SerializeField] private MeshFilter meshFilter;
-    [SerializeField] private MeshRenderer meshRenderer;
+
+    public readonly Dictionary<string, Face> faces = new();
+    private readonly List<string> selectedElements = new();
     
-    public readonly Dictionary<Guid, Vertex> vertices = new();
-    public readonly List<Vertex> selectedVertices = new();
-
-    public readonly Dictionary<Guid, Triangle> triangles = new();
-    public Triangle selectedTriangle;
-
     private bool LeftControlPressed =>
         Math.Abs(leftControlInput.ToInputAction().ReadValue<float>() - 1) < float.Epsilon;
 
@@ -34,39 +30,71 @@ public class MeshManager : MonoBehaviour
 
     public void OnDeleteSelected()
     {
-        foreach (Vertex _vertex in selectedVertices)
+        foreach (string _id in selectedElements)
         {
-            _vertex.Delete();
-            vertices.Remove(_vertex.guid);
+            string[] _idElements = _id.Split('-');
+            string _type = _idElements[0];
+            switch (_type)
+            {
+                case "0":
+                    faces.Remove(_idElements[1]);
+                    break;
+                case "1":
+                    faces[_idElements[1]].DeleteVertex(_idElements[2]);
+                    break;
+                case ElementType.Triangle:
+                    faces[_selectedElement.faceGuid].DeleteTriangle(_guid);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
-        selectedVertices.Clear();
-
-        if (selectedTriangle != null)
-        {
-            triangles.Remove(selectedTriangle.guid);
-            selectedTriangle = null;
-        }
-        
+        selectedElements.Clear();
+    
         ReRenderMesh();
     }
 
     #endregion
 
+    #region Faces
+
+    public void CreateFace(Guid _guid)
+    {
+        faces.Add(_guid, new Face());
+    }
+
+    public void SelectFace(Guid _guid)
+    {
+        DeSelectAll();
+        selectedElements.Add(new SelectedElement(_guid, ElementType.Face));
+    }
+
+    public void DeSelectFace(Guid _guid)
+    {
+        selectedElements.Remove(new SelectedElement(_guid, ElementType.Face));
+    }
+
+    #endregion
+    
     #region Vertices
 
     public void CreateVertex(Guid _guid)
     {
+        if (!IsFaceSelected(out Guid _faceGuid)) return;
+
         Vertex _vertex = Instantiate(vertexPrefab, transform).GetComponent<Vertex>();
         _vertex.guid = _guid;
-        vertices.Add(_guid, _vertex);
-        SelectVertex(_guid);
+        faces[_faceGuid].CreateVertex(_guid, _vertex);
+
+        DeSelectAll();
+        selectedElements.Add(new SelectedElement(selectedElements[0].guid, _guid, ElementType.Vertex));
     }
 
     public void SelectVertex(Guid _guid)
     {
-        if (selectedTriangle != null)
+        if (IsTriangleSelected(out Guid _faceGuidT, out Guid _triangleGuidT))
         {
-            selectedTriangle.SelectVertex(_guid);
+            faces[_faceGuidT].SelectVertex(_triangleGuidT, _guid);
             ReRenderMesh();
             return;
         }
@@ -74,13 +102,7 @@ public class MeshManager : MonoBehaviour
         Vertex _vertex = vertices[_guid];
         if (!LeftControlPressed)
         {
-            foreach (Vertex _sVertex in selectedVertices)
-            {
-                _sVertex.DeSelect();
-            }
-
-            selectedVertices.Clear();
-            selectedVertices.Add(_vertex);
+            DeSelectAll();
             _vertex.Select();
 
             Transform _trans = _vertex.transform;
@@ -91,11 +113,11 @@ public class MeshManager : MonoBehaviour
         }
         else
         {
-            selectedVertices.Add(_vertex);
+            selectedElements.Add(new SelectedElement(_faceGuid));
             _vertex.Select();
 
             Vertex[] _vertices = selectedVertices.ToArray();
-            List<Transform> _transforms = new List<Transform> {_vertices[0].transform};
+            List<Transform> _transforms = new() {_vertices[0].transform};
             Vector3 _pos = new Vector3(_vertices[0].transform.position.x, _vertices[0].transform.position.y,
                 _vertices[0].transform.position.z);
             
@@ -154,26 +176,6 @@ public class MeshManager : MonoBehaviour
         moveTool.SetPos(_pos);
     }
 
-    public void DeSelectAllVertices()
-    {
-        moveTool.Hide();
-        foreach (Vertex _vertex in selectedVertices)
-        {
-            _vertex.DeSelect();
-        }
-        selectedVertices.Clear();
-    }
-
-    public bool IsVertexSelected(Vertex _vertex)
-    {
-        return selectedVertices.Contains(_vertex);
-    }
-
-    public Vertex GetVertex(Guid _guid)
-    {
-        return vertices[_guid];
-    }
-
     public void MoveVertexToX(Guid _guid, float _xValue)
     {
         Transform _vertTrans = vertices[_guid].transform;
@@ -207,19 +209,21 @@ public class MeshManager : MonoBehaviour
 
     public void CreateTriangle(Guid _guid)
     {
-        Triangle _triangle = new Triangle(_guid);
-        triangles.Add(_guid, _triangle);
-        SelectTriangle(_guid);
+        if (!IsFaceSelected(out Guid _faceGuid)) return;
+        
+        faces[_faceGuid].CreateTriangle(_guid);
+        SelectTriangle(_faceGuid, _guid);
     }
 
-    public void SelectTriangle(Guid _guid)
+    public void SelectTriangle(Guid _faceGuid, Guid _guid)
     {
-        selectedTriangle = triangles[_guid];
+        DeSelectAll();
+        selectedElements.Add(new SelectedElement(_faceGuid, _guid, ElementType.Triangle));
     }
 
-    public void DeSelectTriangle(Guid _guid)
+    public void DeSelectTriangle(Guid _faceGuid, Guid _guid)
     {
-        selectedTriangle = null;
+        selectedElements.Remove(new SelectedElement(_faceGuid, _guid, ElementType.Triangle));
     }
     
     #endregion
@@ -336,4 +340,88 @@ public class MeshManager : MonoBehaviour
     }
 
     #endregion
+
+    #region Selection
+
+    private void DeSelectAll()
+    {
+        foreach (SelectedElement _element in selectedElements)
+        {
+            switch (_element.elementType)
+            {
+                case ElementType.Face:
+                    DeSelectFace(_element.guid);
+                    break;
+                case ElementType.Vertex:
+                    DeSelectVertex(_element.guid);
+                    break;
+                case ElementType.Triangle:
+                    DeSelectTriangle(_element.guid);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+    }
+    
+    private bool IsFaceSelected(out Guid _guid)
+    {
+        foreach (var _element in selectedElements.Where(_element => _element.elementType == ElementType.Face))
+        {
+            _guid = _element.guid;
+            return true;
+        }
+
+        _guid = Guid.Empty;
+        return false;
+    }
+    
+    private bool IsTriangleSelected(out Guid _faceGuid, out Guid _guid)
+    {
+        foreach (var _element in selectedElements.Where(_element => _element.elementType == ElementType.Triangle))
+        {
+            _guid = _element.guid;
+            _faceGuid = _element.faceGuid;
+            return true;
+        }
+
+        _guid = Guid.Empty;
+        _faceGuid = Guid.Empty;
+        return false;
+    }
+    
+    private bool IsVertexSelected()
+    {
+        return selectedElements.Any(_element => _element.elementType == ElementType.Vertex);
+    }
+
+    #endregion
+}
+
+public struct SelectedElement
+{
+    public readonly Guid faceGuid;
+    public readonly Guid guid;
+    public readonly ElementType elementType;
+
+    public SelectedElement(Guid _faceGuid, Guid _guid, ElementType _elementType)
+    {
+        faceGuid = _faceGuid;
+        guid = _guid;
+        elementType = _elementType;
+    }
+
+    public SelectedElement(Guid _guid, ElementType _elementType) : this()
+    {
+        faceGuid = _guid;
+        guid = _guid;
+        elementType = _elementType;
+    }
+}
+
+public enum ElementType
+{
+    Face = 0,
+    Vertex,
+    Triangle
 }
